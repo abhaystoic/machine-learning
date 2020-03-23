@@ -64,9 +64,8 @@ class DurationPrediction:
     # Draw Plot
     fig, axes = plt.subplots(1, 2, figsize=(20,7), dpi= 80)
     seabornInstance.boxplot(x='year', y='Duration', data=df, ax=axes[0])
-    seabornInstance.boxplot(x='month',
-                y='Duration',
-                data=df.loc[~df.year.isin([1991, 2020]), :])
+    seabornInstance.boxplot(
+      x='month', y='Duration', data=df.loc[~df.year.isin([1991, 2020]), :])
 
     # Set Title
     axes[0].set_title('Year-wise Box Plot\n(The Trend)', fontsize=18)
@@ -112,12 +111,18 @@ class DurationPrediction:
     logging.info('Slope = {}'.format(regressor.coef_))
 
     y_pred = regressor.predict(y_test)
-    df = pd.DataFrame({'Actual': y_test.flatten(), 'Predicted': y_pred.flatten()})
+    df = pd.DataFrame({
+      'Actual': y_test.flatten(),
+      'Predicted': y_pred.flatten()
+    })
     logging.info(df)
-    logging.info('Mean Absolute Error: %s', metrics.mean_absolute_error(y_test, y_pred))
-    logging.info('Mean Squared Error: %s', metrics.mean_squared_error(y_test, y_pred))
-    logging.info('Root Mean Squared Error: %s',
-                 np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
+    logging.info(
+      'Mean Absolute Error: %s', metrics.mean_absolute_error(y_test, y_pred))
+    logging.info(
+      'Mean Squared Error: %s', metrics.mean_squared_error(y_test, y_pred))
+    logging.info(
+      'Root Mean Squared Error: %s',
+      np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
 
     self.plot_predictions(X_train, X_test, y_train, y_test, y_pred)
 
