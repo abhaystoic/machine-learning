@@ -21,7 +21,8 @@ class DurationPrediction:
     # Read the data from CSV. Mark the datetime fields.
     self.dataframe = pd.read_csv(
       os.path.join(cwd, 'data/combined_csv.csv'),
-      parse_dates=['Start Time', 'End Time']).sort_values(by='Start Time')
+      parse_dates=['Start Time', 'End Time'],
+      index_col='Start Time').sort_values(by='Start Time')
     self.clean_dates()
   
   def clean_dates(self):
@@ -30,15 +31,15 @@ class DurationPrediction:
     Linear regression doesn't work on date data. Therefore we need to
     convert it into numerical value.
     """
-    self.dataframe['Start Time'] = pd.to_datetime(
-      self.dataframe['Start Time'], infer_datetime_format=True)
-    # self.dataframe['Start Time'] = self.dataframe['Start Time'].map(
-    #   datetime.datetime.toordinal)
-    self.dataframe = self.dataframe.set_index('Start Time')
-    self.dataframe['End Time'] = pd.to_datetime(
-      self.dataframe['End Time'], infer_datetime_format=True)
-    # self.dataframe['End Time'] = self.dataframe['End Time'].map(
-    #   datetime.datetime.toordinal)
+    # self.dataframe['Start Time'] = pd.to_datetime(
+    #   self.dataframe['Start Time'], infer_datetime_format=True)
+    # # self.dataframe['Start Time'] = self.dataframe['Start Time'].map(
+    # #   datetime.datetime.toordinal)
+    # self.dataframe = self.dataframe.set_index('Start Time')
+    # self.dataframe['End Time'] = pd.to_datetime(
+    #   self.dataframe['End Time'], infer_datetime_format=True)
+    # # self.dataframe['End Time'] = self.dataframe['End Time'].map(
+    # #   datetime.datetime.toordinal)
 
     rows, cols = self.dataframe.shape
     logging.info(f'Data size:  Rows = {rows}, Coumns = {cols}')
@@ -48,6 +49,38 @@ class DurationPrediction:
     # logging.info(self.dataframe.info())
     logging.info('*' * 20)
     logging.info(self.dataframe.head())
+    # self.plot_df(title='ISS Pass Overhead. Location: Chandiarh, India.')
+    self.plot_monthly_distribution()
+
+  
+  def plot_df(self, title='', xlabel='Date', ylabel='Value', dpi=100):
+    x = self.dataframe.index
+    y = self.dataframe.Duration
+    plt.figure(figsize=(16,5), dpi=dpi)
+    plt.plot(x, y, color='tab:red')
+    plt.gca().set(title=title, xlabel=xlabel, ylabel=ylabel)
+    plt.show()
+  
+  def plot_monthly_distribution(self):
+    df = self.dataframe
+    df.reset_index(inplace=True)
+
+    # Prepare data
+    df['year'] = [d.year for d in df['Start Time']]
+    df['month'] = [d.strftime('%b') for d in df['Start Time']]
+    years = df['year'].unique()
+
+    # Draw Plot
+    fig, axes = plt.subplots(1, 2, figsize=(20,7), dpi= 80)
+    seabornInstance.boxplot(x='year', y='Duration', data=df, ax=axes[0])
+    seabornInstance.boxplot(x='month',
+                y='Duration',
+                data=df.loc[~df.year.isin([1991, 2020]), :])
+
+    # Set Title
+    axes[0].set_title('Year-wise Box Plot\n(The Trend)', fontsize=18)
+    axes[1].set_title('Month-wise Box Plot\n(The Seasonality)', fontsize=18)
+    plt.show()
 
   def plot_data(self):
     self.dataframe.plot(x='Start Time', y='Duration', style='o')
