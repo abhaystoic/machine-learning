@@ -1,5 +1,6 @@
 """Module for predicting the duration of ISS over Chandigarh."""
 
+import datetime
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,7 +11,7 @@ import sys
 
 from sklearn.model_selection import train_test_split 
 from sklearn.linear_model import LinearRegression
-# from sklearn import metrics %matplotlib inline
+from sklearn import metrics
 
 class DurationPrediction:
 
@@ -21,6 +22,24 @@ class DurationPrediction:
     self.dataframe = pd.read_csv(
       os.path.join(cwd, 'data/combined_csv.csv'),
       parse_dates=['Start Time', 'End Time']).sort_values(by='Start Time')
+    self.clean_dates()
+  
+  def clean_dates(self):
+    """ Convert dates to ordinal.
+
+    Linear regression doesn't work on date data. Therefore we need to
+    convert it into numerical value.
+    """
+    self.dataframe['Start Time'] = pd.to_datetime(
+      self.dataframe['Start Time'], infer_datetime_format=True)
+    # self.dataframe['Start Time'] = self.dataframe['Start Time'].map(
+    #   datetime.datetime.toordinal)
+    self.dataframe = self.dataframe.set_index('Start Time')
+    self.dataframe['End Time'] = pd.to_datetime(
+      self.dataframe['End Time'], infer_datetime_format=True)
+    # self.dataframe['End Time'] = self.dataframe['End Time'].map(
+    #   datetime.datetime.toordinal)
+
     rows, cols = self.dataframe.shape
     logging.info(f'Data size:  Rows = {rows}, Coumns = {cols}')
     # logging.info('*' * 20)
@@ -56,13 +75,32 @@ class DurationPrediction:
     Split 80% of the data to the training set while 20% of the data to test
     set using below code.
     """
+    # Split the data.
     X, y = self.mark_attributes_label()
     X_train, X_test, y_train, y_test = train_test_split(
-      X, y, test_size=0.2, random_state=0)
+      X, y, test_size=0.2, random_state=0, shuffle=False)
     
+    self.predict(X_train, X_test, y_train, y_test)
+  
+  def predict(self, X_train, X_test, y_train, y_test):
+    # Training the algorithm.
     regressor = LinearRegression()
-    regressor.fit(X_train, y_train) #training the algorithm
-    #To retrieve the intercept:
-    print(regressor.intercept_)
-    #For retrieving the slope:
-    print(regressor.coef_)
+    regressor.fit(X_train, y_train)
+    # To retrieve the intercept:
+    logging.info('Intercept = {}'.format(regressor.intercept_))
+    # For retrieving the slope:
+    logging.info('Slope = {}'.format(regressor.coef_))
+
+    y_pred = regressor.predict(X_test)
+    # df = pd.DataFrame({'Actual': y_test.flatten(), 'Predicted': y_pred.flatten()})
+    
+    print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
+    print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
+    print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
+
+    self.plot_predictions(X_train, X_test, y_train, y_test, y_pred)
+
+  def plot_predictions(self, X_train, X_test, y_train, y_test, y_pred):
+    plt.scatter(X_test, y_test,  color='gray')
+    plt.plot(X_test, y_pred, color='red', linewidth=2)
+    plt.show()
