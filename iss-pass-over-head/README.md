@@ -7,6 +7,8 @@ I have this habit of exploring the night sky with the help of mobile apps like
 [Star Walk](https://apps.apple.com/us/app/star-walk-2-night-sky-map/id892279069)
 . Space has always been a subject of fascination for me.
 
+This is a fun project to predict the duration of the ISS over the head for a particular location in Chandigarh, India.
+
 The ISS circles the Earth in roughly 92 minutes and completes 15.5 orbits per
 day. I collected this data with the help of [IFTTT mobile app](https://apps.apple.com/us/app/ifttt/id660944635).
 
