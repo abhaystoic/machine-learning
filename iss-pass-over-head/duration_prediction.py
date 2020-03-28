@@ -62,7 +62,7 @@ class DurationPrediction:
     years = df['year'].unique()
 
     # Draw Plot
-    fig, axes = plt.subplots(1, 2, figsize=(20,7), dpi= 80)
+    fig, axes = plt.subplots(1, 2, figsize=(20,7), dpi=80)
     seabornInstance.boxplot(x='year', y='Duration', data=df, ax=axes[0])
     seabornInstance.boxplot(
       x='month', y='Duration', data=df.loc[~df.year.isin([1991, 2020]), :])
@@ -86,13 +86,13 @@ class DurationPrediction:
     set using below code.
     """
     # Split the data.
-    X, y = self.mark_attributes_label()
+    X, y = self.get_attributes_label()
     X_train, X_test, y_train, y_test = train_test_split(
       X, y, test_size=0.2, random_state=0, shuffle=False)
     
     self.predict(X_train, X_test, y_train, y_test)
   
-  def mark_attributes_label(self, attr='Start Time', label='Duration'):
+  def get_attributes_label(self, attr='Start Time', label='Duration'):
     # Resetting index 
     self.dataframe.reset_index(inplace = True)
     # Mark Start Time as attribute.
@@ -113,7 +113,7 @@ class DurationPrediction:
     y_pred = regressor.predict(y_test)
     df = pd.DataFrame({
       'Actual': y_test.flatten(),
-      'Predicted': y_pred.flatten()
+      'Predicted': y_pred.flatten(),
     })
     logging.info(df)
     logging.info(
